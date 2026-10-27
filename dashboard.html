@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TerraSagip Live Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0b1220;
+      --card: #151e2e;
+      --border: #243044;
+      --text: #e5eef7;
+      --muted: #94a3b8;
+      --green: #22c55e;
+      --teal: #14b8a6;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --blue: #38bdf8;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 40% at 10% 0%, rgba(34,197,94,0.1), transparent),
+        radial-gradient(ellipse 50% 30% at 90% 20%, rgba(20,184,166,0.07), transparent);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .container { width: min(1100px, 94%); margin: 0 auto; }
+
+    /* Header */
+    header {
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2rem;
+    }
+
+    .header-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 1.35rem;
+    }
+
+    .logo-icon {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--green), var(--teal));
+      display: grid; place-items: center;
+      font-size: 1.2rem;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .status-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .last-update {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    /* Risk Banner */
+    .risk-banner {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.1rem 1.4rem;
+      margin-bottom: 1.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .risk-level {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .risk-badge {
+      padding: 0.35rem 0.9rem;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.03em;
+    }
+
+    .risk-safe { background: rgba(34,197,94,0.15); color: var(--green); }
+    .risk-warning { background: rgba(245,158,11,0.15); color: var(--amber); }
+    .risk-danger { background: rgba(239,68,68,0.15); color: var(--red); }
+
+    /* Sensor Grid */
+    .sensors {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.1rem;
+      margin-bottom: 2rem;
+    }
+
+    .sensor-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.35rem;
+      transition: border-color 0.2s;
+    }
+
+    .sensor-card:hover { border-color: rgba(34,197,94,0.35); }
+
+    .sensor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.9rem;
+    }
+
+    .sensor-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .sensor-icon { font-size: 1.2rem; }
+
+    .sensor-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .sensor-unit {
+      font-size: 0.95rem;
+      color: var(--muted);
+      font-weight: 500;
+      margin-left: 0.25rem;
+    }
+
+    .sensor-bar {
+      height: 6px;
+      background: #1e293b;
+      border-radius: 99px;
+      margin-top: 0.9rem;
+      overflow: hidden;
+    }
+
+    .sensor-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.6s ease;
+    }
+
+    .bar-green { background: var(--green); }
+    .bar-teal { background: var(--teal); }
+    .bar-blue { background: var(--blue); }
+    .bar-amber { background: var(--amber); }
+    .bar-red { background: var(--red); }
+
+    /* GPS + Info */
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 1.1rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 700px) {
+      .bottom-grid { grid-template-columns: 1fr; }
+    }
+
+    .info-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.4rem;
+    }
+
+    .info-card h3 {
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .gps-coords {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .gps-label { font-size: 0.85rem; color: var(--muted); }
+
+    .threshold-list {
+      list-style: none;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+    .threshold-list li {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .threshold-list li:last-child { border-bottom: none; }
+
+    .threshold-list span:last-child {
+      color: var(--muted);
+      font-family: monospace;
+    }
+
+    /* Config notice */
+    .config-box {
+      background: rgba(245,158,11,0.08);
+      border: 1px solid rgba(245,158,11,0.25);
+      border-radius: 12px;
+      padding: 1.2rem 1.4rem;
+      margin-bottom: 2rem;
+      font-size: 0.9rem;
+    }
+
+    .config-box strong { color: var(--amber); }
+
+    .config-box code {
+      background: #1e293b;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem 0 2.5rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-inner">
+        <div class="logo">
+          <div class="logo-icon">🌍</div>
+          TerraSagip Live
+        </div>
+        <div class="status">
+          <div class="status-dot" id="statusDot"></div>
+          <span id="connectionStatus">Connecting...</span>
+          <span class="last-update" id="lastUpdate">—</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Risk Level -->
+    <div class="risk-banner">
+      <div class="risk-level">
+        <span style="color:var(--muted); font-size:0.9rem;">Current Risk Level:</span>
+        <span class="risk-badge risk-safe" id="riskBadge">SAFE</span>
+      </div>
+      <div style="font-size:0.85rem; color:var(--muted);" id="riskMessage">
+        All parameters within normal range
+      </div>
+    </div>
+
+    <!-- Config Notice -->
+    <div class="config-box">
+      <strong>⚙️ Setup Required:</strong> 
+      Replace <code>CHANNEL_ID</code> and <code>READ_API_KEY</code> in the JavaScript below with your own ThingSpeak values to receive real data.
+    </div>
+
+    <!-- Sensors -->
+    <div class="sensors">
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div class="sensor-title"><span class="sensor-icon">💧</span> Soil Moisture</div>
+        </div>
+        <div>
+          <span class="sensor-value" id="soil">--</span>
+          <span class="sensor-unit">%</span>
+        </div>
+        <div class="sensor-bar"><div class="sensor-bar-fill bar-green" id="soilBar" style="width:0%"></div></div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div class="sensor-title"><span class="sensor-icon">🌧️</span> Rainfall</div>
+        </div>
+        <div>
+          <span class="sensor-value" id="rain">--</span>
+          <span class="sensor-unit">mm/h</span>
+        </div>
+        <div class="sensor-bar"><div class="sensor-bar-fill bar-blue" id="rainBar" style="width:0%"></div></div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div class="sensor-title"><span class="sensor-icon">📐</span> Slope Inclination</div>
+        </div>
+        <div>
+          <span class="sensor-value" id="tilt">--</span>
+          <span class="sensor-unit">°</span>
+        </div>
+        <div class="sensor-bar"><div class="sensor-bar-fill bar-amber" id="tiltBar" style="width:0%"></div></div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div class="sensor-title"><span class="sensor-icon">📳</span> Vibration</div>
+        </div>
+        <div>
+          <span class="sensor-value" id="vibration">--</span>
+          <span class="sensor-unit">g</span>
+        </div>
+        <div class="sensor-bar"><div class="sensor-bar-fill bar-teal" id="vibBar" style="width:0%"></div></div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div class="sensor-title"><span class="sensor-icon">🌡️</span> Temperature</div>
+        </div>
+        <div>
+          <span class="sensor-value" id="temp">--</span>
+          <span class="sensor-unit">°C</span>
+        </div>
+        <div class="sensor-bar"><div class="sensor-bar-fill bar-amber" id="tempBar" style="width:0%"></div></div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div class="sensor-title"><span class="sensor-icon">💨</span> Humidity</div>
+        </div>
+        <div>
+          <span class="sensor-value" id="humidity">--</span>
+          <span class="sensor-unit">%</span>
+        </div>
+        <div class="sensor-bar"><div class="sensor-bar-fill bar-blue" id="humBar" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- Bottom section -->
+    <div class="bottom-grid">
+      <div class="info-card">
+        <h3>📍 GPS Location</h3>
+        <div class="gps-coords" id="gps">Waiting for data...</div>
+        <div class="gps-label">Latitude, Longitude</div>
+      </div>
+
+      <div class="info-card">
+        <h3>⚠️ Warning Thresholds</h3>
+        <ul class="threshold-list">
+          <li><span>Soil Moisture</span> <span>&gt; 80% Warning</span></li>
+          <li><span>Rainfall</span> <span>&gt; 7.5 mm/h</span></li>
+          <li><span>Inclination</span> <span>&gt; 10°</span></li>
+          <li><span>Vibration</span> <span>&gt; 0.5 g</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    TerraSagip Live Dashboard · Eastern Visayas Regional Science High School · 2026
+  </footer>
+
+  <script>
+    // ====================== CONFIGURATION ======================
+    // Replace these with your own ThingSpeak values
+    const CHANNEL_ID = "YOUR_CHANNEL_ID";        // ← Put your Channel ID here
+    const READ_API_KEY = "YOUR_READ_API_KEY";    // ← Put your Read API Key here
+    // ===========================================================
+
+    const UPDATE_INTERVAL = 15000; // 15 seconds
+
+    async function fetchData() {
+      try {
+        const url = `https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds/last.json?api_key=${READ_API_KEY}`;
+        const response = await fetch(url);
+        
+        if (!response.ok) throw new Error("Failed to fetch");
+
+        const data = await response.json();
+
+        // Update values
+        updateValue("soil", data.field1, 100, "soilBar");
+        updateValue("rain", data.field2, 30, "rainBar");
+        updateValue("tilt", data.field3, 30, "tiltBar");
+        updateValue("vibration", data.field4, 2, "vibBar");
+        updateValue("temp", data.field5, 50, "tempBar");
+        updateValue("humidity", data.field6, 100, "humBar");
+
+        // GPS (if you send it as a combined string or use extra fields)
+        if (data.field7 && data.field8) {
+          document.getElementById("gps").textContent = `${data.field7}, ${data.field8}`;
+        }
+
+        // Status
+        document.getElementById("connectionStatus").textContent = "Live";
+        document.getElementById("statusDot").style.background = "var(--green)";
+        document.getElementById("lastUpdate").textContent = "Updated " + new Date().toLocaleTimeString();
+
+        // Risk calculation
+        calculateRisk(data);
+
+      } catch (err) {
+        document.getElementById("connectionStatus").textContent = "No data / Check config";
+        document.getElementById("statusDot").style.background = "var(--amber)";
+        console.log("Waiting for ThingSpeak data...");
+      }
+    }
+
+    function updateValue(id, value, max, barId) {
+      const el = document.getElementById(id);
+      const bar = document.getElementById(barId);
+      if (value === null || value === undefined || value === "") {
+        el.textContent = "--";
+        bar.style.width = "0%";
+        return;
+      }
+      const num = parseFloat(value);
+      el.textContent = num.toFixed(1);
+      const percent = Math.min((num / max) * 100, 100);
+      bar.style.width = percent + "%";
+    }
+
+    function calculateRisk(data) {
+      const soil = parseFloat(data.field1) || 0;
+      const rain = parseFloat(data.field2) || 0;
+      const tilt = parseFloat(data.field3) || 0;
+      const vib  = parseFloat(data.field4) || 0;
+
+      const badge = document.getElementById("riskBadge");
+      const msg = document.getElementById("riskMessage");
+
+      let level = "SAFE";
+      let message = "All parameters within normal range";
+
+      if (soil > 90 || rain > 15 || tilt > 15 || vib > 0.5) {
+        level = "DANGER";
+        message = "Critical conditions detected — immediate attention recommended";
+      } else if (soil > 80 || rain > 7.5 || tilt > 10 || vib > 0.1) {
+        level = "WARNING";
+        message = "Elevated readings detected — monitor closely";
+      }
+
+      badge.textContent = level;
+      badge.className = "risk-badge risk-" + level.toLowerCase();
+      msg.textContent = message;
+    }
+
+    // Start
+    fetchData();
+    setInterval(fetchData, UPDATE_INTERVAL);
+  </script>
+</body>
+</html>
